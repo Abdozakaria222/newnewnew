@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.spec
+.venv/
+venv/
+# User data never belongs in the repository
+*.log
+logs/
+backups/
+profiles.json
+settings.json
+custom_dns_providers.json
+*_benchmarks.csv
+netopt-diagnostics-*.json
+# Secrets
+.env
+*.pem
+*.key
+credentials*
