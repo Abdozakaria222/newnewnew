@@ -1,12 +1,23 @@
-"""Entry point:  python -m netoptimizer  [--no-browser] [--port N]"""
+"""Entry point.  python -m netoptimizer          -> desktop window (no browser)
+                 python -m netoptimizer --web     -> old browser dashboard"""
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 
+def _fix_windowed_streams():
+    # PyInstaller --windowed has no console: stdout/stderr are None.
+    for name in ("stdout", "stderr"):
+        if getattr(sys, name) is None:
+            setattr(sys, name, open(os.devnull, "w"))
+
+
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="netoptimizer", description="NetworkOptimizer — evidence-based DNS & MTU tuning")
+    _fix_windowed_streams()
+    ap = argparse.ArgumentParser(prog="netoptimizer", description="NetworkOptimizer — أفضل DNS وMTU")
+    ap.add_argument("--web", action="store_true", help="use the browser dashboard instead of the desktop window")
     ap.add_argument("--port", type=int, default=None)
     ap.add_argument("--no-browser", action="store_true")
     args = ap.parse_args(argv)
@@ -14,8 +25,12 @@ def main(argv=None) -> int:
         print("Python 3.9 or newer is required.")
         return 1
     from .app import App
-    from .ui.server import serve
     app = App()
+    if not args.web:
+        from .gui.window import Window
+        Window(app).run()
+        return 0
+    from .ui.server import serve
     httpd, _ = serve(app, args.port, not args.no_browser)
     try:
         httpd.serve_forever(poll_interval=0.5)

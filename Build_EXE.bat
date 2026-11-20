@@ -7,7 +7,7 @@ echo Running tests first...
 %PY% -m unittest discover -s . -p "test_*.py" -t . || (echo Tests failed - build stopped. & pause & exit /b 1)
 echo Installing PyInstaller (build tool only, the app itself needs no packages)...
 %PY% -m pip install --upgrade pyinstaller || (echo pip failed. & pause & exit /b 1)
-%PY% -m PyInstaller --noconfirm --clean --onefile --name NetworkOptimizer ^
+%PY% -m PyInstaller --noconfirm --clean --onefile --windowed --name NetworkOptimizer ^
   --add-data "netoptimizer\ui\static;netoptimizer\ui\static" ^
   --add-data "netoptimizer\data;netoptimizer\data" ^
   launcher.py

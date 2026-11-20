@@ -8,7 +8,7 @@
 
 ### التشغيل
 1. ثبّت Python 3.9 أو أحدث من python.org (فعّل خيار "Add python.exe to PATH").
-2. افتح **Run.bat**، وستفتح واجهة البرنامج في المتصفح تلقائيًا.
+2. افتح **Run.bat**، وتفتح نافذة برنامج عادية (من غير متصفح). اضغط «ابدأ الفحص» وهتشوف أفضل DNS وأفضل MTU بنتيجة واحدة واضحة وزر «طبّق التوصية».
 
 البرنامج لا يحتاج أي مكتبات إضافية. يعمل كمستخدم عادي، ويطلب صلاحية المسؤول **فقط** عند تطبيق إعداد أو استعادته.
 
@@ -34,7 +34,7 @@
 
 Evidence-based DNS and MTU optimization for Windows 10/11.
 
-* **Run:** `Run.bat` (Python 3.9+, no third-party packages). Opens a local UI at `http://127.0.0.1:8765`.
+* **Run:** `Run.bat` (Python 3.9+, no third-party packages). Opens a native desktop window (Tkinter, no browser). The old browser dashboard is still available with `--web`.
 * **Admin rights:** only requested (UAC) at the moment you apply or restore settings.
 * **Data:** `%APPDATA%\NetworkOptimizer` (settings, profiles, backups, logs, CSV benchmark logs). Never uploaded.
 * **How scores and decisions work:** see [SCORING.md](SCORING.md).
