@@ -37,6 +37,22 @@ IPV6_MIN_MTU = 1280
 CONF_WEIGHTS = {"agreement": 40, "confirmation": 30, "boundary": 15, "verification": 15}
 SINGLE_DESTINATION_CAP = 50
 
+def ping_cmd(dest: str, mtu: int, family: str) -> str:
+    """The equivalent command typed on Windows (payload = MTU - headers)."""
+    return f"ping {'-6 ' if family == 'ipv6' else ''}{dest} -f -l {mtu - OVERHEAD[family]}"
+
+
+def ping_result(status: str, rtt, dest: str, mtu: int, family: str) -> str:
+    if status == "ok":
+        t = f" time={rtt:.0f}ms" if isinstance(rtt, (int, float)) else ""
+        return f"Reply from {dest}: bytes={mtu - OVERHEAD[family]}{t}"
+    if status == "frag_needed":
+        return "Packet needs to be fragmented but DF set."
+    if status == "unreachable":
+        return "Destination host unreachable."
+    return "Request timed out."
+
+
 ProbeFn = Callable[[str, int, bool, int], Probe]
 
 
@@ -244,6 +260,7 @@ class MtuEngine:
         reasons.append(f"Limit evidence: {mechanism}. Loss events (inconclusive probes): "
                        f"{self.counts['loss_events']}.")
 
+        result["proof"] = self._proof(family, (agreeing or list(found))[0], path_mtu)
         conf = self.confidence(found, agreeing, result["destinations"], verification)
         if not enough_agreement:
             reasons.append("Only one destination gave a confirmed result — confidence reduced.")
@@ -256,7 +273,27 @@ class MtuEngine:
                                     "loss_events": self.counts["loss_events"]}})
         return self._finish(result)
 
+    def _proof(self, family: str, dest: str, path_mtu: int) -> list:
+        """Windows-style evidence: the largest size that replied and the next size that did not."""
+        def last(mtu, want_ok):
+            for e in reversed(self.log):
+                if e["dest"] == dest and e["mtu"] == mtu and (e["status"] == "ok") == want_ok:
+                    return e
+        lines = []
+        good = last(path_mtu, True)
+        bad = last(path_mtu + 1, False)
+        for e in (good, bad):
+            if e:
+                lines.append(f"{ping_cmd(dest, e['mtu'], family)}  ->  "
+                             f"{ping_result(e['status'], e['rtt'], dest, e['mtu'], family)}")
+        lines.append(f"Largest payload that passes = {path_mtu - OVERHEAD[family]} bytes; "
+                     f"+ {OVERHEAD[family]} bytes of headers = MTU {path_mtu}.")
+        return lines
+
     def _finish(self, result: dict) -> dict:
+        result["trace"] = [f"{ping_cmd(e['dest'], e['mtu'], result['family'])}  ->  "
+                           f"{ping_result(e['status'], e['rtt'], e['dest'], e['mtu'], result['family'])}"
+                           for e in self.log[-400:]]
         result["probes_sent"] = len(self.log)
         result["probe_log"] = self.log[-400:]
         self.progress(1.0, "MTU done")

@@ -86,21 +86,23 @@ def mtu_verdict(result: Optional[dict], current_mtu) -> dict:
     conf = result.get("confidence")
     label = confidence_label(conf)
     reasons = result.get("reasons", [])
+    proof = result.get("proof", [])
     path = result.get("path_mtu")
     if dec == "no_data" or not path:
         return {"level": "unsure", "title": "مقدرناش نقيس الـ MTU",
                 "detail": "الشبكة ما ردتش على اختبار الحزم الكبيرة (غالبًا ICMP محجوب أو لا يوجد اتصال). "
-                          "متغيّرش حاجة.", "apply": None, "reasons": reasons}
+                          "متغيّرش حاجة.", "apply": None, "reasons": reasons, "proof": []}
     if dec == "keep":
         return {"level": "ok", "title": f"الـ MTU الحالي ({current_mtu}) مناسب",
                 "detail": f"الشبكة بتمرّر الحزم لحد {path} من غير تقطيع. {label}.",
-                "apply": None, "reasons": reasons}
+                "apply": None, "reasons": reasons, "proof": proof, "trace": result.get("trace", [])}
     if dec in ("lower", "set"):
         word = "اخفضه" if dec == "lower" else "اضبطه"
         cur = f" (الحالي {current_mtu})" if current_mtu else ""
         return {"level": "change", "title": f"أفضل MTU: {result['recommended']}",
                 "detail": f"{word} إلى {result['recommended']}{cur}. {label} ({conf}/100).",
-                "apply": result["recommended"], "reasons": reasons}
+                "apply": result["recommended"], "reasons": reasons, "proof": proof,
+                "trace": result.get("trace", [])}
     return {"level": "unsure", "title": "النتيجة غير مؤكدة",
             "detail": "الأدلة مش كافية. الأفضل متغيّرش حاجة.", "apply": None, "reasons": reasons}
 

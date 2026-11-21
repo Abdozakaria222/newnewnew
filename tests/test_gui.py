@@ -136,6 +136,12 @@ class TestWindowSmoke(unittest.TestCase):
             self.assertEqual(w.job.state, "done", w.job.error)
             self.assertEqual(w.vm["dns"]["level"], "change")
             self.assertEqual(w.vm["mtu"]["apply"], 1492)
+            proof = w.vm["mtu"]["proof"]
+            self.assertTrue(proof[0].startswith("ping ") and "-f -l 1464" in proof[0], proof)
+            self.assertIn("Reply from", proof[0])
+            self.assertIn("-f -l 1465", proof[1])
+            self.assertIn("needs to be fragmented", proof[1])
+            self.assertIn("MTU 1492", proof[2])
             self.assertEqual(w.apply_btn.opts.get("state"), "normal")
             w.apply()
             time.sleep(0.2)

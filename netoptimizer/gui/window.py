@@ -95,7 +95,10 @@ class Window:
             v = self.vm[key]
             head, det = self.cards[key]
             head.config(text=ICON[v["level"]] + v["title"], fg=COL[v["level"]])
-            det.config(text=v["detail"])
+            extra = ""
+            if key == "mtu" and v.get("proof"):
+                extra = "\n\nليه الرقم ده؟ (نفس الأمر على الـ CMD)\n" + "\n".join(v["proof"])
+            det.config(text=v["detail"] + extra)
         self.apply_btn.config(state="normal" if self.vm["plan"] and not self.busy else "disabled")
         self._fill_details()
 
@@ -111,6 +114,11 @@ class Window:
                 succ = "—" if r["success"] is None else f"{r['success']:.0%}"
                 t.insert("end", f"{'★' if r['is_best'] else ' '} {str(r['name'])[:24]:<24} {str(r['primary']):<16} "
                                 f"score {r['score']!s:<5} median {med:<10} success {succ}\n")
+            t.insert("end", "\n")
+        if vm["mtu"].get("trace"):
+            t.insert("end", "كل تجارب MTU (أمر ping -f -l ونتيجته)\n")
+            for x in vm["mtu"]["trace"]:
+                t.insert("end", "  " + x + "\n")
             t.insert("end", "\n")
         for title, key in (("لماذا هذه توصية DNS", "dns"), ("لماذا هذه توصية MTU", "mtu")):
             if vm[key]["reasons"]:
