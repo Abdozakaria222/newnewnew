@@ -1,5 +1,7 @@
-"""Entry point.  python -m netoptimizer          -> desktop window (no browser)
-                 python -m netoptimizer --web     -> old browser dashboard"""
+"""Entry point.
+  python -m netoptimizer            full dashboard in a native window (no browser)
+  python -m netoptimizer --simple   small Tkinter window (one screen, plain-language verdicts)
+  python -m netoptimizer --web      the dashboard in your normal browser"""
 from __future__ import annotations
 
 import argparse
@@ -17,7 +19,8 @@ def _fix_windowed_streams():
 def main(argv=None) -> int:
     _fix_windowed_streams()
     ap = argparse.ArgumentParser(prog="netoptimizer", description="NetworkOptimizer — أفضل DNS وMTU")
-    ap.add_argument("--web", action="store_true", help="use the browser dashboard instead of the desktop window")
+    ap.add_argument("--web", action="store_true", help="open the dashboard in the normal browser")
+    ap.add_argument("--simple", action="store_true", help="small one-screen Tkinter window")
     ap.add_argument("--port", type=int, default=None)
     ap.add_argument("--no-browser", action="store_true")
     args = ap.parse_args(argv)
@@ -26,7 +29,13 @@ def main(argv=None) -> int:
         return 1
     from .app import App
     app = App()
-    if not args.web:
+    if not args.web and not args.simple:
+        from .gui import webwindow
+        if webwindow.run(app):
+            return 0
+        print("Embedded window unavailable (pywebview / WebView2 missing) - using the simple window.")
+        args.simple = True
+    if args.simple:
         from .gui.window import Window
         Window(app).run()
         return 0

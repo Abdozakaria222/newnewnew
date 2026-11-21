@@ -23,8 +23,8 @@ jobs:
 
       - name: Build EXE
         run: |
-          python -m pip install pyinstaller
-          python -m PyInstaller --noconfirm --clean --onefile --windowed --name NetworkOptimizer --add-data "netoptimizer/ui/static;netoptimizer/ui/static" --add-data "netoptimizer/data;netoptimizer/data" launcher.py
+          python -m pip install pyinstaller pywebview
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --collect-all webview --name NetworkOptimizer --add-data "netoptimizer/ui/static;netoptimizer/ui/static" --add-data "netoptimizer/data;netoptimizer/data" launcher.py
 
       - name: Upload EXE (Actions artifact)
         uses: actions/upload-artifact@v4

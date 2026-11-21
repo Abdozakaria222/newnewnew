@@ -161,3 +161,18 @@ class TestWindowSmoke(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestWebWindowFallback(unittest.TestCase):
+    def test_returns_false_without_pywebview(self):
+        sys.modules.pop("webview", None)
+        saved = sys.modules.get("webview")
+        sys.modules["webview"] = None          # makes `import webview` raise ImportError
+        try:
+            from netoptimizer.gui import webwindow
+            self.assertFalse(webwindow.run(object()))
+        finally:
+            if saved is None:
+                sys.modules.pop("webview", None)
+            else:
+                sys.modules["webview"] = saved

@@ -255,6 +255,7 @@
         ${kpi(t("confidence"), (r.confidence ?? 0) + "%", Object.entries(r.confidence_parts || {}).map(([k, x]) => k + " " + x).join(" · "))}
         ${kpi(t("probes"), r.probes_sent, esc(r.date))}</div>
         <div class="card section"><h2>${t("why")}</h2>${reasons(r.reasons)}${r.notes && r.notes.length ? `<h3 style="margin-top:10px">${t("notes")}</h3>${reasons(r.notes)}` : ""}</div>
+        ${(r.proof || []).length ? `<div class="card section"><h2>${t("mtu_proof")}</h2><pre class="mono proof">${esc(r.proof.join("\n"))}</pre></div>` : ""}
         <div class="grid2 section"><div class="card"><h3>${t("probes")}</h3><canvas class="chart" id="m_${fam}"></canvas>
           <div class="legend"><span><i style="background:var(--good)"></i>${t("legend_ok")}</span><span><i style="background:var(--bad)"></i>${t("legend_frag")}</span><span><i style="background:var(--warn)"></i>${t("legend_to")}</span></div></div>
         <div class="card table-wrap"><h3>${t("baseline")} / ${t("destinations")}</h3><table><tr><th>${t("destinations")}</th><th>${t("status")}</th><th class="num">${t("replies")}</th><th class="num">MTU</th><th class="num">${t("confidence")}</th></tr>
@@ -262,7 +263,8 @@
             return `<tr><td class="mono">${esc(d)}</td><td>${chip(b.state, b.state === "ok" ? "good" : "bad")}</td><td class="num">${b.replies}/${b.sent}</td><td class="num">${s.max || "—"}</td><td class="num">${c.attempts ? c.passes + "/" + c.attempts : "—"}</td></tr>`; }).join("")}
           </table>
           ${v.small ? `<h3 style="margin-top:12px">${t("verification")}</h3><table>${["small", "medium", "large"].map((k) => `<tr><td>${k}</td><td class="num">${v[k].mtu}</td><td class="num">${v[k].ok}/${v[k].sent}</td></tr>`).join("")}</table>` : ""}
-        </div></div>`;
+        </div></div>
+        ${(r.trace || []).length ? `<details class="card section"><summary>${t("mtu_trace")} (${r.trace.length})</summary><pre class="mono proof">${esc(r.trace.join("\n"))}</pre></details>` : ""}`;
     });
     $("page").innerHTML = h;
     $("go").onclick = () => startJob("/mtu/start");
